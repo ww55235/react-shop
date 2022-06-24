@@ -1,11 +1,12 @@
 import './index.scss'
-function MyHeader(props) {
+import { forwardRef } from 'react'
+const MyHeader = forwardRef((props, ref) => {
   const { title } = props
   return (
-    <div className={`header`}>
+    <div className={`header`} ref={ref}>
       <span className="title">{title}</span>
     </div>
   )
-}
+})
 
 export default MyHeader

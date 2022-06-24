@@ -1,0 +1,29 @@
+.goods {
+  .goods-item {
+    box-sizing: border-box;
+    padding: 10px;
+    display: flex;
+    .img-wrapper {
+      width: 100px;
+      img {
+        width: 100%;
+      }
+    }
+    .goods-info {
+      box-sizing: border-box;
+      padding-left: 20px;
+      line-height: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+
+      .goods-name {
+        font-size: 14px;
+      }
+      .goods-price {
+        color: red;
+      }
+    }
+  }
+}

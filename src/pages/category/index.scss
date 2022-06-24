@@ -1,2 +1,58 @@
 .category {
+  .content-body {
+    display: flex;
+    overflow: hidden;
+
+    .scroll-wrapper {
+      overflow: hidden;
+    }
+
+    .menu-wrapper {
+      width: 80px;
+      .menu-item {
+        position: relative;
+        text-align: center;
+        line-height: 40px;
+        border-bottom: 1px solid #cccccc;
+
+        &.active {
+          &::before {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 2px;
+            background-color: red;
+            height: 100%;
+            content: ' ';
+          }
+        }
+      }
+    }
+    .goods-wrapper {
+      flex: 1;
+      overflow: hidden;
+      .goods-item {
+        margin: 10px;
+        .title {
+          text-align: center;
+          line-height: 40px;
+        }
+        .goods-item-wrapper {
+          display: flex;
+          flex-wrap: wrap;
+          .goods {
+            padding: 5px 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 33.333%;
+            > img {
+              width: 80px;
+            }
+          }
+        }
+      }
+    }
+  }
 }

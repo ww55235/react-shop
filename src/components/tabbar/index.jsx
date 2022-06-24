@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useState, forwardRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import './index.scss'
-function Tabbar(props) {
+const Tabbar = forwardRef((props, ref) => {
   const navigate = useNavigate()
   const location = useLocation()
   //  console.log(location, 'location')
@@ -33,7 +33,7 @@ function Tabbar(props) {
     },
   ])
   return (
-    <div id={`tabbar`}>
+    <div id={`tabbar`} ref={ref}>
       {list.map((item, index) => {
         return (
           <div
@@ -50,6 +50,6 @@ function Tabbar(props) {
       })}
     </div>
   )
-}
+})
 
 export default Tabbar

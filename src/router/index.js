@@ -2,6 +2,8 @@ import Home from '../pages/home/index.jsx'
 import Category from '../pages/category/index.jsx'
 import Cart from '../pages/cart/index.jsx'
 import Me from '../pages/me/index.jsx'
+
+import GoodsList from '../components/goods-list/index.jsx'
 import { Navigate } from 'react-router-dom'
 const routes = [
   {
@@ -19,6 +21,10 @@ const routes = [
   {
     path: '/me',
     element: <Me />,
+  },
+  {
+    path: '/goods-list',
+    element: <GoodsList />,
   },
   {
     path: '/',
