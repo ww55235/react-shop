@@ -1,0 +1,21 @@
+#tabbar {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: #ffffff;
+  height: 40px;
+
+  .tabbar-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+
+    &.active {
+      color: red;
+    }
+  }
+}
