@@ -17,3 +17,9 @@ export const reqCategoryData = () => request('/categories')
 
 // 商品搜索
 export const reqGoodsSearch = data => request('/goods/search', data)
+
+// 商品详情
+export const reqGoodsDetail = goods_id =>
+  request('/goods/detail', {
+    goods_id,
+  })

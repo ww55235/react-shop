@@ -1,19 +1,24 @@
 import Tabbar from '@/components/tabbar/index.jsx'
+import { click } from '@testing-library/user-event/dist/click.js'
 
 import { useCallback, useEffect, useState } from 'react'
 
-import { Swiper, SearchBar } from 'antd-mobile'
+import { Swiper, SearchBar, NavBar } from 'antd-mobile'
 
 import { reqSwiperdata, reqNavData, reqFloordata } from '@/api/index.js'
 
 import MyHeader from '@/components/my-header/index.jsx'
+
 // 引入样式文件
 import './index.scss'
+import { useNavigate } from 'react-router-dom'
 
 function Home(props) {
+  const navigate = useNavigate()
   const [swiperData, setSwiperData] = useState([])
   const [navList, setNavList] = useState([])
   const [floorList, setFloorList] = useState([])
+  // goods_id
   // 获取首页轮播图数据
   useEffect(() => {
     ;(async () => {
@@ -28,20 +33,26 @@ function Home(props) {
     })()
   }, [])
 
+  const click = useCallback(item => {
+    // console.log(item, 'iii')
+    navigate(`/goods-detail?goods_id=${item.goods_id}`)
+  }, [])
+
   const focus = useCallback(() => {
     console.log('触发焦点，跳转到搜索页面')
   }, [])
 
   const items = swiperData.map((item, index) => {
     return (
-      <Swiper.Item key={index}>
+      <Swiper.Item key={index} onClick={() => click(item)}>
         <img className={`img`} src={item.image_src} alt="" />
       </Swiper.Item>
     )
   })
   return (
     <div className={`home`}>
-      <MyHeader title="首页" />
+      {/*<MyHeader title="首页" />*/}
+      <NavBar backArrow={false}>首页</NavBar>
       <SearchBar placeholder="搜索" onFocus={() => focus()} />
       <Swiper>{items}</Swiper>
       <div className={`nav-wrapper`}>

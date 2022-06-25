@@ -2,6 +2,7 @@ import Tabbar from '@/components/tabbar/index.jsx'
 import './index.scss'
 import MyHeader from '@/components/my-header/index.jsx'
 import { reqCategoryData } from '@/api'
+import { NavBar } from 'antd-mobile'
 import { useEffect, useState, useRef, useCallback } from 'react'
 import BScroll from 'better-scroll'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -11,9 +12,10 @@ function Category(props) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [contentBodyHeight, setContentBodyHeight] = useState(0)
   const [scrollY, setScrollY] = useState(0)
+
+  const [menuScrollInstance, setMenuScrollInstance] = useState(null)
   // 商品分类对应区块的高度
   //const [goodsCateClientHeights, setGoodsCateClientHeights] = useState([])
-  const menuScrollInstanceRef = useRef(null)
   //menu区域滚动 BS实例
   const scrollWrapperRef = useRef(null)
   // 头部组件Ref
@@ -21,107 +23,103 @@ function Category(props) {
 
   const tabbarRef = useRef(null)
 
-  const clientHeightsRef = useRef(null)
+  const [goodsCateClientHeights, setGoodsCateClientHeights] = useState([])
 
   const goodsWrapperScrollRef = useRef(null)
 
-  const goodsWrapperScrollInstance = useRef(null)
+  const [goodsWrapperScrollInstance, setGoodsWrapperScrollInstance] =
+    useState(null)
 
   const location = useLocation()
 
   const navigate = useNavigate()
+
+  const back = useCallback(() => {
+    navigate(-1)
+  }, [])
 
   // 获取数据
   useEffect(() => {
     ;(async () => {
       const result = await reqCategoryData()
       setCategoryList(result)
-      console.log(categoryList, 'categoryList ttt')
+      // console.log(categoryList, 'categoryList ttt')
     })()
+  }, [])
+
+  // 初始化bs
+  useEffect(() => {
+    setGoodsWrapperScrollInstance(() => {
+      const bsInstance = new BScroll(goodsWrapperScrollRef.current, {
+        click: true,
+        observeDOM: true,
+        scrollY: true,
+        probeType: 2,
+      })
+      bsInstance.on('scroll', pos => {
+        setScrollY(-pos.y)
+        // setScrollY(-pos.y)
+        //  const scrollY = -pos.y
+      })
+      return bsInstance
+    })
+    const scroll = new BScroll(scrollWrapperRef.current, {
+      click: true,
+      observeDOM: true,
+      scrollY: true,
+      probeType: 2,
+    })
+    setMenuScrollInstance(scroll)
   }, [])
 
   // 获取区块的高度
   useEffect(() => {
     const clientHeights = []
     const children = document.querySelector('.goods-wrapper-scroll').children
+    if (!children.length) {
+      return
+    }
     let height = 0
     clientHeights.push(height)
     ;[...children].forEach(child => {
       height += child.clientHeight
       clientHeights.push(height)
     })
-    if (clientHeightsRef.current?.length > 0) {
-      return
-    }
-    clientHeightsRef.current = clientHeights
+    setGoodsCateClientHeights(clientHeights)
   }, [categoryList])
 
   // index 索引改变了滚动到对应的goods-wrapper
   useEffect(() => {
-    if (!goodsWrapperScrollInstance.current) {
-      return
-    }
     //   console.log(goodsWrapperScrollInstance.current, 'curr')
     const element = document.querySelector('.goods-wrapper-scroll').children[
       currentIndex
     ]
-    goodsWrapperScrollInstance.current?.scrollToElement(element, 300)
+    goodsWrapperScrollInstance?.scrollToElement(element, 300)
   }, [currentIndex])
 
   // 初始化
   useEffect(() => {
     const clientHeight = window.innerHeight
-    const height =
-      clientHeight -
-      (headerRef.current.clientHeight + tabbarRef.current.clientHeight)
+    const height = clientHeight - (tabbarRef.current.clientHeight + 45)
     setContentBodyHeight(height)
     goodsWrapperScrollRef.current.height = height + 'px'
-    goodsWrapperScrollInstance.current = new BScroll(
-      goodsWrapperScrollRef.current,
-      {
-        click: true,
-        observeDOM: true,
-        scrollY: true,
-        probeType: 2,
+  }, [categoryList])
+
+  useEffect(() => {
+    for (let i = 0; i < goodsCateClientHeights.length - 1; i++) {
+      const prevHeight = goodsCateClientHeights[i]
+      const nextHeight = goodsCateClientHeights[i + 1]
+      if (scrollY >= prevHeight && scrollY <= nextHeight) {
+        setCurrentIndex(i)
       }
-    )
-    goodsWrapperScrollInstance.current.on('scroll', pos => {
-      // setScrollY(-pos.y)
-      const scrollY = -pos.y
-      const goodsCateClientHeights = clientHeightsRef.current
-      // console.log(goodsCateClientHeights, 'goodsCateClientHeights')
-      for (let i = 0; i < goodsCateClientHeights.length - 1; i++) {
-        const prevHeight = goodsCateClientHeights[i]
-        const nextHeight = goodsCateClientHeights[i + 1]
-        if (scrollY >= prevHeight && scrollY <= nextHeight) {
-          setCurrentIndex(i)
-        }
-      }
-    })
-    menuScrollInstanceRef.current = new BScroll(scrollWrapperRef.current, {
-      click: true,
-      observeDOM: true,
-      scrollY: true,
-      probeType: 2,
-    })
-  }, [])
-  // better-scroll 滚动事件
-  // const goodsWrapperScrollInstanceScrollHandle = pos => {
-  //   // setScrollY(-pos.y)
-  //   const scrollY = -pos.y
-  //   console.log(goodsCateClientHeights, 'goodsCateClientHeights')
-  //
-  //   for (let i = 0; i < goodsCateClientHeights.length - 1; i++) {
-  //     const prevHeight = goodsCateClientHeights[i]
-  //     const nextHeight = goodsCateClientHeights[i + 1]
-  //     if (scrollY >= prevHeight && scrollY <= nextHeight) {
-  //       setCurrentIndex(i)
-  //     }
-  //   }
-  // }
+    }
+  }, [scrollY])
+
   return (
     <div className="category">
-      <MyHeader title="分类" ref={headerRef} />
+      {/*<MyHeader title="分类" ref={headerRef} />*/}
+      <NavBar onBack={() => back()}>分类</NavBar>
+      {/*{JSON.stringify(goodsCateClientHeights)}*/}
       <div
         className={`content-body`}
         style={{
@@ -163,7 +161,13 @@ function Category(props) {
                                   <div
                                     className={`goods`}
                                     key={idx3}
-                                    onClick={() => navigate('/goods-list')}
+                                    onClick={() =>
+                                      navigate(
+                                        '/goods-list?' +
+                                          'cat_id=' +
+                                          item3.cat_id
+                                      )
+                                    }
                                   >
                                     <img
                                       src={item3.cat_icon}

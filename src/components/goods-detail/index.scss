@@ -1,0 +1,33 @@
+.goods-detail {
+  .swiper-wrapper {
+    img {
+      width: 100%;
+      height: 300px;
+    }
+  }
+
+  .goods-info {
+    .goods-des {
+      .goods-price {
+        color: red;
+        font-size: 18px;
+      }
+
+      .goods-name-wrapper {
+        display: flex;
+        .name {
+          border-right: 1px solid #cccccc;
+          line-height: 20px;
+          flex: 1;
+        }
+
+        .favorite {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 40px;
+        }
+      }
+    }
+  }
+}

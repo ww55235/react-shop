@@ -1,10 +1,13 @@
+import GoodsDetail from '../components/goods-detail/index.jsx'
 import Home from '../pages/home/index.jsx'
 import Category from '../pages/category/index.jsx'
 import Cart from '../pages/cart/index.jsx'
 import Me from '../pages/me/index.jsx'
 
 import GoodsList from '../components/goods-list/index.jsx'
+
 import { Navigate } from 'react-router-dom'
+
 const routes = [
   {
     path: '/home',
@@ -25,6 +28,10 @@ const routes = [
   {
     path: '/goods-list',
     element: <GoodsList />,
+  },
+  {
+    path: '/goods-detail',
+    element: <GoodsDetail />,
   },
   {
     path: '/',
