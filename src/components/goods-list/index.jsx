@@ -1,106 +1,46 @@
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { SearchBar, Tabs, NavBar } from 'antd-mobile'
+
 import { reqGoodsSearch } from '@/api/index.js'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { SearchBar, Tabs, ImageViewer } from 'antd-mobile'
-import { useCallback, useState, useEffect, useRef } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import { debounce } from 'throttle-debounce'
-import BScroll from 'better-scroll'
-import qs from 'qs'
-import MyHeader from '@/components/my-header/index.jsx'
-import Goods from '@/components/goods/index.jsx'
-import { NavBar } from 'antd-mobile'
+import { TOP_HEIGHT, TAB_HEIGHT, INPUT_HEIGHT } from '@/constants'
+
+import Goods from '@/components/goods'
+import Scroll from '@/components/scroll'
+
+const scrollHeight =
+  window.innerHeight - (TOP_HEIGHT + TAB_HEIGHT + INPUT_HEIGHT)
+
 function GoodsList(props) {
+  const scrollRef = useRef(null)
   const navigate = useNavigate()
-  const location = useLocation()
+  const [goodsList, setGoodsList] = useState([])
   const [searchParams, setSearchParams] = useSearchParams()
 
   const cat_id = searchParams.get('cat_id')
-
-  //console.log(cat_id, 'cat_id')
-  // console.log(location, 'location')
-  const queryParams = qs.parse(location.search.slice(1))
-
   const [params, setParams] = useState({
     query: '',
-    cid: queryParams.cat_id,
+    cid: cat_id,
     pagenum: 1,
     pagesize: 10,
   })
 
-  const [total, setTotal] = useState(0)
-
-  const [goodsList, setGoodsList] = useState([])
-
-  const [goodsScrollInstance, setGoodsScrollInstance] = useState(null)
-
-  const [goodsScrollContainerHeight, setGoodsScrollContainerHeight] =
-    useState(0)
-
-  const reqSearchTimerRef = useRef(null)
-
-  const searchBarRef = useRef(null)
-
-  const navBarRef = useRef(null)
-
-  const goodsScrollContainerRef = useRef(null)
-
-  const reqSearch = async () => {
-    const result = await reqGoodsSearch(params)
-    setGoodsList(prevState => {
-      if (!result.goods) {
-        result.goods = []
-      }
-      return [...prevState, ...result.goods]
-    })
+  const onSearch = async () => {
+    const { goods = [] } = await reqGoodsSearch(params)
+    setGoodsList(goods)
   }
 
   useEffect(() => {
-    // 减去 头部 和 搜索 tab 的高度
-    let height = window.innerHeight - 45 - 45 - 35
-    setGoodsScrollContainerHeight(height)
-    setGoodsScrollInstance(() => {
-      const instance = new BScroll(goodsScrollContainerRef.current, {
-        probeType: 2,
-        click: true,
-        observeDOM: true,
-        pullUpLoad: true,
-        pullDownRefresh: true,
-      })
-      // console.log(instance, 'instanceinstanceinstanceinstance')
-
-      //上拉刷新
-
-      instance.on('pullingDown', () => {
-        setParams(_ => ({
-          query: '',
-          cid: queryParams.cat_id,
-          pagenum: 1,
-          pagesize: 10,
-        }))
-        instance.finishPullDown()
-      })
-
-      // 下拉加载下一页
-      instance.on('pullingUp', async () => {
-        setParams(prevState => ({
-          ...prevState,
-          pagenum: ++prevState.pagenum,
-        }))
-        instance.finishPullUp()
-      })
-      return instance
-    })
-    reqSearch()
+    onSearch()
   }, [])
 
   // 参数变化重新请求数据
   useEffect(() => {
-    clearTimeout(reqSearchTimerRef.current)
-    reqSearchTimerRef.current = setTimeout(async () => {
-      await reqSearch()
-    }, 500)
+    const timer = setTimeout(onSearch, 500)
     return () => {
-      clearTimeout(reqSearchTimerRef.current)
+      if (timer) {
+        clearTimeout(timer)
+      }
     }
   }, [params])
 
@@ -108,47 +48,69 @@ function GoodsList(props) {
     navigate(-1)
   }, [])
 
-  const change = useCallback(event => {
-    // params.query = event.tab.value
-    //  console.log(event, 'event')
+  const inputChange = useCallback(value => {
     setParams(prevState => {
       return {
         ...prevState,
-        query: event,
+        query: value,
       }
     })
   }, [])
 
-  useEffect(() => {
-    console.log(searchBarRef.current, 'current')
-    console.log(navBarRef.current, 'navBarRef')
-  }, [])
+  // 上拉加载
+  const fetchMoreData = async () => {
+    console.log('上拉')
+    // const result = await reqGoodsSearch({
+    //   ...params,
+    //   pagenum: params.pagenum + 1,
+    // })
+    // setGoodsList(prevState => {
+    //   const goods = result.goods || []
+    //   return [...prevState, ...goods]
+    // })
+    // setParams(prevState => ({
+    //   ...prevState,
+    //   pagenum: prevState.pagenum + 1,
+    // }))
+  }
+
+  // 下拉刷新
+  const refreshData = () => {
+    console.log('下拉')
+    // if (params.query === '') return
+    // setParams({
+    //   query: '',
+    //   cid: cat_id,
+    //   pagenum: 1,
+    //   pagesize: 10,
+    // })
+  }
 
   return (
     <div className={`goodsList`}>
       {/*<MyHeader title="商品列表" />*/}
-      <NavBar onBack={() => back()}>商品列表</NavBar>
+      <NavBar onBack={back}>商品列表</NavBar>
       <SearchBar
         value={params.query}
-        ref={searchBarRef}
         placeholder="搜索"
-        onChange={event => change(event)}
+        onChange={inputChange}
       />
       <Tabs>
         <Tabs.Tab title="综合" key="fruits"></Tabs.Tab>
         <Tabs.Tab title="销量" key="vegetables"></Tabs.Tab>
         <Tabs.Tab title="价格" key="animals"></Tabs.Tab>
       </Tabs>
-      <div
+      <Scroll
+        ref={scrollRef}
         className={`goods-scroll-container`}
-        ref={goodsScrollContainerRef}
-        style={{
-          height: goodsScrollContainerHeight + 'px',
-          overflow: 'hidden',
-        }}
+        style={{ height: scrollHeight }}
+        pullUpLoad
+        pullDownRefresh
+        onPullUp={fetchMoreData}
+        onPullDown={refreshData}
       >
         <Goods goodsList={goodsList}></Goods>
-      </div>
+      </Scroll>
     </div>
   )
 }

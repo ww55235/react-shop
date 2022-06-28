@@ -98,7 +98,7 @@ function Home(props) {
           )
         })}
       </div>
-      <Tabbar />
+      {/* <Tabbar /> */}
     </div>
   )
 }
